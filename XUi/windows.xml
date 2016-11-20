@@ -1,11 +1,9 @@
 <windows>
 
 	<!-- SHSMOD Begin -->
-	
 	<window name="SHSInfoPanel" style="infopanel.window">
 		<!-- Level, XP widget -->
 		<rect pos="0,-55" controller="PlayerStatsWindow"  globalopacitymod="0.8">
-			<!--<texture depth="1" size="60,60" texture="@http://games.sovic.org.ua:26980/images/ItemIcons/shsxpbg.png" material="Materials/Transparent Colored" pos="0,0" />-->
 			<sprite depth="2" pos="5,-5" size="50,50" sprite="ui_game_filled_circle" color="0,0,0" type="filled" filldirection="radial360" fill="100" />
 			<sprite depth="3" pos="8,-8" size="44,44" sprite="ui_game_filled_circle" color="255,255,255" type="filled" filldirection="radial360" fill="{playerlevelfill}" />
 			<sprite depth="4" pos="12,-12" size="36,36" sprite="ui_game_filled_circle" color="0,0,0" type="filled" filldirection="radial360" fill="100" globalopacitymod="2.0" />
@@ -16,8 +14,9 @@
 			<grid name="WorldInfo" pos="5,-63" rows="2" cols="1" cell_height="25" repeat_content="false" side="left">
 				<rect height="22"> 	
 					<!-- Day, Time -->
-					<sprite depth="2" pos="0,0" style="icon22px" sprite="ui_game_symbol_clock" />
+					<sprite depth="2" pos="0,0" style="icon22px" sprite="ui_game_symbol_clock" globalopacitymod="0.5" />
 					<label  depth="2" pos="25,0" width="100" font_size="22" color="[white]" effect="outline" upper_case="true" justify="left" text="{daytitle} {day|always} {time|always}" />
+					<texture depth="1" pos="1,-1" size="19,19" texture="@http://localhost:26980/moon?d={day|always}" material="Materials/Transparent Colored" />
 				</rect>
 				<rect height="22" controller="MapStats">
 					<!-- Map temperature -->
@@ -81,7 +80,7 @@
 		</rect>
 	</window>
 
-	<!-- ADD toolbelt shorkeys number -->
+	<!-- ADD toolbelt shorkey numbers -->
 	<window name="windowToolbelt" width="603" height="78" depth="5" anchor="CenterBottom" pos="-313, 87" backgroundcolor="[black]" controller="ToolbeltWindow" visible="{toolbeltvisible}">
 		<rect>
 			<sprite depth="8" name="backgroundMain" sprite="menu_empty3px" color="[black]" type="sliced" fillcenter="false" on_press="true" />
@@ -107,38 +106,8 @@
 		<!-- Indicator -->
 		<sprite pos="198,-27" size="4,93" sprite="ui_game_symbol_subtract" color="250,220,20,128" pivot="center"/>
 	</window>
-
 	<!-- SHSMOD End -->
-	
-	<!--
-	<window name="HUDLeftStatBars">
-		<grid name="hud" pos="9,98" rows="2" cols="1" width="168" cell_width="168" cell_height="46" repeat_content="false" side="left" >
-			<rect width="168" height="43" controller="HUDStatBar" stat_type="Stamina" visible="{statvisible}">
-				<sprite depth="1" name="border" color="0,0,0,100" height="43" type="sliced"/>
-				<sprite depth="2" pos="3,-3"  name="background" height="37" width="162" color="64,64,64,100" type="sliced" />
-				<sprite depth="3" pos="3,-3"  name="BarContent" color="[green]" type="filled" height="37" width="162" fill="0" />
-				<sprite depth="4" name="Icon" atlas="{staticonatlas|once}" sprite="{staticon|once}" size="32,32" pos="8,-6" foregroundlayer="true"/>
-				<label depth="6" name="TextContent" pos="0,-8" font_size="28" color="[white]" justify="center" pivot="topleft" text="{statcurrentwithmax}" height="30"/>
-			</rect>
 
-			<rect width="168" height="43" controller="HUDStatBar" stat_type="Health" visible="{statvisible}">
-				<sprite depth="1" name="border" color="0,0,0,100" height="43" type="sliced" />
-				<sprite depth="2" pos="3,-3"  name="background" height="37" width="162" color="64,64,64,100" type="sliced" />
-				<sprite depth="3" pos="3,-3"  name="BarContent" sprite="{statimage|once}" type="filled" height="37" width="162" fill="0" />
-				<sprite depth="4" name="Icon" atlas="{staticonatlas|once}" sprite="{staticon|once}" size="32,32" pos="8,-6" foregroundlayer="true"/>
-				<label depth="6" name="TextContent" pos="0,-8" font_size="28" color="[white]" justify="center" pivot="topleft" text="{statcurrentwithmax}" height="30"/>
-			</rect>
-		</grid>
-
-		<rect name="hud" pos="93,124" side="left" controller="BuffPopoutList" pivot="BottomLeft" >
-			<panel width="168" height="43" name="item" visible="false" pivot="right" disableautobackground="true" pos="70, 0" >
-				<sprite depth="3" pos="0,0"  name="Background" sprite="ui_game_popup" height="43" width="162" pivot="center" flip="Horizontally" color="[transparent]" />
-				<sprite depth="4" name="Icon" size="36,32" pos="-58,0" pivot="center" color="[transparent]"/>
-				<label depth="6" name="TextContent" pos="0,0" font_size="28" color="[white]" justify="center" height="30" pivot="center"/>
-			</panel>
-		</rect>
-	</window>
-	-->
 	<window name="HUDRightStatBars">
 
 		<rect name="hud" pos="-90,31" side="right" controller="CollectedItemList" pivot="BottomLeft">
@@ -148,12 +117,6 @@
 				<label depth="6" name="TextContent" font_size="28" color="[white]" justify="center" height="30" pivot="center"/>
 				<sprite depth="6" pos="0,16" width="32" height="32" name="Negative" sprite="ui_game_symbol_x" color="[red]" />
 			</panel>
-
-			 <!-- <rect width="168" height="43" controller="CollectedItem">
-				<sprite depth="3" pos="3,0"  name="Background" sprite="{itembackground}" height="43" width="162" color="{itembackgroundcolor}" />
-				<sprite depth="4" name="Icon" atlas="ItemIconAtlas" sprite="{itemicon}" size="36,32" pos="130,-6" color="{itemiconcolor}" />
-				<label depth="6" name="TextContent" pos="15,-10" font_size="28" color="[white]" justify="center" text="{itemcount}" height="30"/>
-			</rect> -->
 		</rect>
 
 		<grid name="hud" pos="-177,52" rows="2" cols="1" width="168" cell_width="168" cell_height="46" repeat_content="false" side="right">
@@ -213,17 +176,7 @@
 		<sprite style="nonpaging.window.name.foreground"/>
 		<label style="nonpaging.window.name"/>
 	</window>
-	<!-- SHSMOD
-	<window name="windowCompass" style="compass.window" controller="CompassWindow">
-		<sprite style="compass.window.background.border"/>
-		<sprite style="compass.window.background"/>
-		<sprite style="compass.window.compass.background"/>
-		<texture style="compass.window.compass.texture" name="compassTexture" rect_size="0.25,1" rect_offset=".8,0" />
-		<sprite pos="200,-60" sprite="" color="255,255,255,255" globalopacitymod="1.8">
-			<label depth="2" width="300" height="30" text="{daytitle}: {day|always}  {timetitle}: {time|always}" font_size="28" pivot="center" effect="outline" upper_case="true" justify="center"/>
-		</sprite>
-	</window>
-	-->
+
 	<window name="windowCraftingList"  width="397" height="688" controller="CraftingListInfo" panel="Left">
 
 		<panel name="header" height="43" depth="1" backgroundspritename="ui_game_panel_header">
@@ -685,16 +638,6 @@
 			<label depth="3" name="lblText" text="" pos="10,-6" font_size="25" overflow="resizefreely"/>
 		</rect>
 	</window>
-	<!-- SHSMOD
-	<window name="windowToolbelt" width="603" height="78" depth="5" anchor="CenterBottom" pos="-313, 87" backgroundcolor="[black]" controller="ToolbeltWindow" visible="{toolbeltvisible}">
-		<rect>
-			<sprite depth="8" name="backgroundMain" sprite="menu_empty3px" color="[black]" type="sliced" fillcenter="false" on_press="true" />
-			<grid depth="1" name="inventory" rows="1" cols="8" pos="3,-3" cell_width="75" cell_height="75" controller="Toolbelt" repeat_content="true">
-				<item_stack name="0"/>
-			</grid>
-		</rect>
-	</window>
-	-->
 
 	<window name="CharacterFrameWindow" width="327" height="704" panel="Left" controller="CharacterFrameWindow" defaultcolor="[white]" hoveredcolor="[selectedColor]" >
 		<panel name="header" height="43" depth="1" backgroundspritename="ui_game_panel_header">

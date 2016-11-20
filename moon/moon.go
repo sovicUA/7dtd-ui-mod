@@ -3,67 +3,100 @@ package main
 import (
 	"bytes"
 	"flag"
-	"fmt"
 	"image"
 	"image/color"
 	"image/draw"
 	"image/png"
 	"log"
+	"math"
 	"net/http"
-	"os"
 	"strconv"
 )
 
 var root = flag.String("root", ".", "Document root path")
 var port = flag.Int("port", 26980, "Listener port")
-var moon = flag.String("moon", "moon.png", "Moon image")
+
+/*** Color of days map ***/
+var colors = [3]color.NRGBA{color.NRGBA{255, 255, 255, 0}, color.NRGBA{255, 220, 0, 200}, color.NRGBA{255, 0, 0, 200}}
+var daymap = [7]int{2, 0, 0, 0, 0, 1, 1}
 
 func main() {
 	flag.Parse()
 	log.Println("Starting tiny webserver for 7DTD moon texture...")
 	log.Println("Document root path: ", *root)
-	http.HandleFunc("/", moonHandler)
+	http.HandleFunc("/moon", moonHandler)
+	http.HandleFunc("/color", colorHandler)
 	log.Println("Listening on port: ", *port)
 	if err := http.ListenAndServe(":"+strconv.Itoa(*port), nil); err != nil {
 		log.Fatal("ERROR Listen and Serve: ", err)
 	}
 }
 
-func moonHandler(w http.ResponseWriter, r *http.Request) {
-	/*** Color of days map ***/
-	colors := [3]color.RGBA{color.RGBA{255, 255, 255, 255}, color.RGBA{245, 215, 10, 255}, color.RGBA{240, 15, 65, 255}}
-	daymap := [7]int{2, 0, 0, 0, 0, 1, 1}
+type circle struct {
+	P image.Point
+	R int
+	C color.NRGBA
+	S bool
+}
 
-	/*** Get parameters ***/
-	day, err := strconv.Atoi(r.FormValue("day"))
+func (c *circle) ColorModel() color.Model {
+	return color.AlphaModel
+}
+
+func (c *circle) Bounds() image.Rectangle {
+	return image.Rect(c.P.X-c.R, c.P.Y-c.R, c.P.X+c.R, c.P.Y+c.R)
+}
+
+func (c *circle) At(x, y int) color.Color {
+	xx, yy, rr := float64(x-c.P.X), float64(y-c.P.Y), float64(c.R)
+	if xx*xx+yy*yy < rr*rr {
+		xr := math.Abs(float64(c.P.X - x))
+		yr := math.Abs(float64(c.P.Y - y))
+		ar := uint8((1 - math.Sqrt(xr*xr+yr*yr)/float64(c.R)) * float64(c.C.A))
+		if c.S {
+			ar = c.C.A
+		}
+		return color.NRGBA{c.C.R, c.C.G, c.C.B, ar}
+	}
+	return color.Alpha{0}
+}
+
+func colorHandler(w http.ResponseWriter, r *http.Request) {
+	d, err := strconv.Atoi(r.FormValue("d"))
 	if err != nil {
 		log.Println("Unable to read key ", err)
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-
-	/*** Load moon image ***/
-	file, err := os.Open(*root + fmt.Sprintf("%c", os.PathSeparator) + *moon)
-	if err != nil {
-		log.Println("Unable to read image: ", err)
+	
+	c := colors[daymap[d%7]]
+	cs := strconv.Itoa(int(c.R)) + "," + strconv.Itoa(int(c.G)) + "," + strconv.Itoa(int(c.B)) + "," + strconv.Itoa(int(c.A))
+	
+	/*** Write Response ***/
+	if _, err := w.Write([]byte(cs)); err != nil {
+		log.Println("Unable to write color: ", err)
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-	defer file.Close()
+}
 
-	mask, err := png.Decode(file)
+func moonHandler(w http.ResponseWriter, r *http.Request) {
+	/*** Get parameters ***/
+	d, err := strconv.Atoi(r.FormValue("d"))
 	if err != nil {
-		log.Println("Unable to decode image: ", err)
+		log.Println("Unable to read key ", err)
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-
+	t, err := strconv.ParseBool(r.FormValue("t"))
+	if err != nil {
+		t = true
+	}
 	/*** Create colored image ***/
-	dst := image.NewRGBA(image.Rect(0, 0, 80, 80))
-	draw.Draw(dst, dst.Bounds(), mask, image.ZP, draw.Src)
-	src := image.NewRGBA(image.Rect(0, 0, 80, 80))
-	draw.Draw(src, src.Bounds(), &image.Uniform{colors[daymap[day%7]]}, image.ZP, draw.Src)
-	draw.DrawMask(dst, dst.Bounds(), src, image.ZP, mask, image.ZP, draw.Over)
+	cXY := image.Point{11, 11}
+	cR := 11
+	dst := image.NewRGBA(image.Rect(0, 0, cXY.X+cR, cXY.Y+cR))
+	draw.Draw(dst, dst.Bounds(), &circle{cXY, cR, colors[daymap[d%7]], t}, image.ZP, draw.Src)
 
 	/*** Write image ***/
 	buffer := new(bytes.Buffer)
