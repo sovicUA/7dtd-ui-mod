@@ -5,3 +5,16 @@
 Разрабатывался для использования на сервере, но можно использовать и для однопользовательской игры.
 </p>
 <img src="screenshots/shsUImod.jpg"/>
+
+# Индикатор дня/орды
+Обычный день
+---
+<img src="screenshots/0day.png"/>
+---
+За два дня до орды
+---
+<img src="screenshots/5day.png"/>
+---
+В день орды
+---
+<img src="screenshots/7day.png"/>
