@@ -20,11 +20,22 @@ var port = flag.Int("port", 26980, "Listener port")
 var colors = [3]color.NRGBA{color.NRGBA{255, 255, 255, 0}, color.NRGBA{255, 220, 0, 200}, color.NRGBA{255, 0, 0, 200}}
 var daymap = [7]int{2, 0, 0, 0, 0, 1, 1}
 
+/*** circle (11(X), 11(Y), 11(R)) ***/
+var cXY = image.Point{11, 11}
+var cR = 11
+
+/*** 
+ * For blur circle: http://localhost:26980/moon?d={day}&t=false or http://localhost:26980/blur?d={day} 
+ * For solid circle: http://localhost:26980/moon?d={day}&t=true or http://localhost:26980/moon?d={day} or http://localhost:26980/solid?d={day} 
+ * ***/
+
 func main() {
 	flag.Parse()
 	log.Println("Starting tiny webserver for 7DTD moon texture...")
 	log.Println("Document root path: ", *root)
+	http.HandleFunc("/blur", blurHandler)
 	http.HandleFunc("/moon", moonHandler)
+	http.HandleFunc("/solid", solidHandler)
 	http.HandleFunc("/color", colorHandler)
 	log.Println("Listening on port: ", *port)
 	if err := http.ListenAndServe(":"+strconv.Itoa(*port), nil); err != nil {
@@ -32,21 +43,19 @@ func main() {
 	}
 }
 
+/*** Circle interface ***/ 
 type circle struct {
 	P image.Point
 	R int
 	C color.NRGBA
 	S bool
 }
-
 func (c *circle) ColorModel() color.Model {
 	return color.AlphaModel
 }
-
 func (c *circle) Bounds() image.Rectangle {
 	return image.Rect(c.P.X-c.R, c.P.Y-c.R, c.P.X+c.R, c.P.Y+c.R)
 }
-
 func (c *circle) At(x, y int) color.Color {
 	xx, yy, rr := float64(x-c.P.X), float64(y-c.P.Y), float64(c.R)
 	if xx*xx+yy*yy < rr*rr {
@@ -61,46 +70,30 @@ func (c *circle) At(x, y int) color.Color {
 	return color.Alpha{0}
 }
 
-func colorHandler(w http.ResponseWriter, r *http.Request) {
+/*** Get "day" parameters ***/
+func getDay(r *http.Request) int {
 	d, err := strconv.Atoi(r.FormValue("d"))
 	if err != nil {
 		log.Println("Unable to read key ", err)
-		http.Error(w, err.Error(), http.StatusNotFound)
-		return
+		d = 0
 	}
-	
-	c := colors[daymap[d%7]]
-	cs := strconv.Itoa(int(c.R)) + "," + strconv.Itoa(int(c.G)) + "," + strconv.Itoa(int(c.B)) + "," + strconv.Itoa(int(c.A))
-	
-	/*** Write Response ***/
-	if _, err := w.Write([]byte(cs)); err != nil {
-		log.Println("Unable to write color: ", err)
-		http.Error(w, err.Error(), http.StatusNotFound)
-		return
-	}
-}
+	return d
+} 
 
-func moonHandler(w http.ResponseWriter, r *http.Request) {
-	/*** Get parameters ***/
-	d, err := strconv.Atoi(r.FormValue("d"))
-	if err != nil {
-		log.Println("Unable to read key ", err)
-		http.Error(w, err.Error(), http.StatusNotFound)
-		return
-	}
+/*** Get "type" parameters ***/
+func getType(r *http.Request) bool {
 	t, err := strconv.ParseBool(r.FormValue("t"))
 	if err != nil {
+		log.Println("Unable to read key ", err)
 		t = true
 	}
-	/*** Create colored image ***/
-	cXY := image.Point{11, 11}
-	cR := 11
-	dst := image.NewRGBA(image.Rect(0, 0, cXY.X+cR, cXY.Y+cR))
-	draw.Draw(dst, dst.Bounds(), &circle{cXY, cR, colors[daymap[d%7]], t}, image.ZP, draw.Src)
+	return t
+} 
 
-	/*** Write image ***/
+/*** Write image ***/
+func writeImg(w http.ResponseWriter, img image.Image) {
 	buffer := new(bytes.Buffer)
-	if err := png.Encode(buffer, dst); err != nil {
+	if err := png.Encode(buffer, img); err != nil {
 		log.Println("Unable to encode image: ", err)
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -114,4 +107,47 @@ func moonHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
+}
+
+/*** Write color data only ***/ 
+func colorHandler(w http.ResponseWriter, r *http.Request) {
+	d := getDay(r)
+
+	c := colors[daymap[d%7]]
+	cs := strconv.Itoa(int(c.R)) + "," + strconv.Itoa(int(c.G)) + "," + strconv.Itoa(int(c.B)) + "," + strconv.Itoa(int(c.A))
+	
+	/*** Write Response ***/
+	if _, err := w.Write([]byte(cs)); err != nil {
+		log.Println("Unable to write color: ", err)
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+}
+
+/*** Draw solid or blur circle | use t=false to draw blur circle ***/
+func moonHandler(w http.ResponseWriter, r *http.Request) {
+	d := getDay(r)
+	t := getType(r)
+	/*** Create colored image ***/
+	dst := image.NewRGBA(image.Rect(0, 0, cXY.X+cR+1, cXY.Y+cR+1))
+	draw.Draw(dst, dst.Bounds(), &circle{cXY, cR, colors[daymap[d%7]], t}, image.ZP, draw.Src)
+	writeImg(w, dst)
+}
+
+/*** Draw blur circle ***/
+func blurHandler(w http.ResponseWriter, r *http.Request) {
+	d := getDay(r)
+	/*** Create colored image ***/
+	dst := image.NewRGBA(image.Rect(0, 0, cXY.X+cR+1, cXY.Y+cR+1))
+	draw.Draw(dst, dst.Bounds(), &circle{cXY, cR, colors[daymap[d%7]], false}, image.ZP, draw.Src)
+	writeImg(w, dst)
+}
+
+/*** Draw solid circle ***/
+func solidHandler(w http.ResponseWriter, r *http.Request) {
+	d := getDay(r)
+	/*** Create colored image ***/
+	dst := image.NewRGBA(image.Rect(0, 0, cXY.X+cR+1, cXY.Y+cR+1))
+	draw.Draw(dst, dst.Bounds(), &circle{cXY, cR, colors[daymap[d%7]], true}, image.ZP, draw.Src)
+	writeImg(w, dst)
 }
