@@ -16,7 +16,7 @@
 					<!-- Day, Time -->
 					<sprite depth="2" pos="0,0" style="icon22px" sprite="ui_game_symbol_clock" globalopacitymod="0.5" />
 					<label  depth="2" pos="25,0" width="100" font_size="22" color="[white]" effect="outline" upper_case="true" justify="left" text="{daytitle} {day|always} {time|always}" />
-					<texture depth="1" pos="1,-1" size="19,19" texture="@http://games.sovic.org.ua:26980/moon?d={day|always}" material="Materials/Transparent Colored" />
+					<texture depth="1" pos="1,-1" size="19,19" texture="@http://games.sovic.org.ua:26980/solid?d={day|always}" material="Materials/Transparent Colored" />
 				</rect>
 				<rect height="22" controller="MapStats">
 					<!-- Map temperature -->
