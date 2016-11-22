@@ -10,10 +10,14 @@ import (
 	"log"
 	"math"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 )
 
 var root = flag.String("root", ".", "Document root path")
+var cert = flag.String("crypt", "/etc/letsencrypt/live", "Path at which an domain containing 'fullchain.pem' and 'privkey.pem' can be found")
+var host = flag.String("host", "games.sovic.org.ua", "The default folder to find certificates to use when no matches are found")
 var port = flag.Int("port", 26980, "Listener port")
 
 /*** Color of days map ***/
@@ -24,32 +28,49 @@ var daymap = [7]int{2, 0, 0, 0, 0, 1, 1}
 var cXY = image.Point{11, 11}
 var cR = 11
 
-/*** 
- * For blur circle: http://localhost:26980/moon?d={day}&t=false or http://localhost:26980/blur?d={day} 
- * For solid circle: http://localhost:26980/moon?d={day}&t=true or http://localhost:26980/moon?d={day} or http://localhost:26980/solid?d={day} 
+/***
+ * For blur circle: http://localhost:26980/moon?d={day}&t=false or http://localhost:26980/blur?d={day}
+ * For solid circle: http://localhost:26980/moon?d={day}&t=true or http://localhost:26980/moon?d={day} or http://localhost:26980/solid?d={day}
  * ***/
 
 func main() {
 	flag.Parse()
 	log.Println("Starting tiny webserver for 7DTD moon texture...")
 	log.Println("Document root path: ", *root)
+	log.Printf("Loading Certificates %s/%s/{privkey.pem,fullchain.pem}\n", *cert, *host)
+	keyPath := filepath.Join(*cert, *host, "privkey.pem")
+	certPath := filepath.Join(*cert, *host, "fullchain.pem")
+
 	http.HandleFunc("/blur", blurHandler)
 	http.HandleFunc("/moon", moonHandler)
 	http.HandleFunc("/solid", solidHandler)
 	http.HandleFunc("/color", colorHandler)
-	log.Println("Listening on port: ", *port)
+
+	/*** HTTPS ***/
+	log.Println("Listening on https port: ", int(*port)+363)
+	go func() {
+		if err := http.ListenAndServeTLS(":"+strconv.Itoa(int(*port)+363), certPath, keyPath, nil); err != nil {
+			log.Fatal("HTTPS Listen and Serve: ", err)
+			os.Exit(1)
+		}
+	}()
+	/*** HTTP ***/
+	log.Println("Listening on http port: ", *port)
 	if err := http.ListenAndServe(":"+strconv.Itoa(*port), nil); err != nil {
-		log.Fatal("ERROR Listen and Serve: ", err)
+		log.Fatal("HTTP Listen and Serve: ", err)
+		os.Exit(1)
 	}
+
 }
 
-/*** Circle interface ***/ 
+/*** Circle interface ***/
 type circle struct {
 	P image.Point
 	R int
 	C color.NRGBA
 	S bool
 }
+
 func (c *circle) ColorModel() color.Model {
 	return color.AlphaModel
 }
@@ -78,7 +99,7 @@ func getDay(r *http.Request) int {
 		d = 0
 	}
 	return d
-} 
+}
 
 /*** Get "type" parameters ***/
 func getType(r *http.Request) bool {
@@ -88,7 +109,7 @@ func getType(r *http.Request) bool {
 		t = true
 	}
 	return t
-} 
+}
 
 /*** Write image ***/
 func writeImg(w http.ResponseWriter, img image.Image) {
@@ -109,13 +130,13 @@ func writeImg(w http.ResponseWriter, img image.Image) {
 	}
 }
 
-/*** Write color data only ***/ 
+/*** Write color data only ***/
 func colorHandler(w http.ResponseWriter, r *http.Request) {
 	d := getDay(r)
 
 	c := colors[daymap[d%7]]
 	cs := strconv.Itoa(int(c.R)) + "," + strconv.Itoa(int(c.G)) + "," + strconv.Itoa(int(c.B)) + "," + strconv.Itoa(int(c.A))
-	
+
 	/*** Write Response ***/
 	if _, err := w.Write([]byte(cs)); err != nil {
 		log.Println("Unable to write color: ", err)
