@@ -1,17 +1,4 @@
 <styles>
-	
-	<!-- SHSMOD -->
-	
-	<!-- Info panel: Level, XP, ... -->
-	<style name="infopanel.window" type="window">
-		<style_entry name="pos" value="5,50"/> 
-		<style_entry name="size" value="200,110"/>
-		<style_entry name="anchor" value="LeftTop"/>
-	</style>
-
-	<!-- SHSMOD -->
-
-
 	<global>
 		<!-- 	
 			GLOBAL STYLE ENTRIES
@@ -539,5 +526,12 @@
 		<style_entry name="invalid_sprite" value="ui_game_symbol_x"/>
 		<style_entry name="width" value="603"/>
 		<style_entry name="height" value="400"/>
+	</style>
+
+	<style name="todays.info.window" type="window">
+		<style_entry name="depth" value="0"/>
+		<style_entry name="pos" value="5,50"/> 
+		<style_entry name="width" value="200"/>
+		<style_entry name="height" value="110"/>
 	</style>
 </styles>
