@@ -8,22 +8,18 @@
 			<sprite depth="4" pos="12,-12" size="36,36" sprite="ui_game_filled_circle" color="0,0,0" type="filled" filldirection="radial360" fill="100" globalopacitymod="2.0" />
 			<label  depth="5" width="50" pos="5,-18" font_size="24" text="{playerlevel}[-]" color="[white]" effect="outline" upper_case="true" justify="center" />
 		</rect>
-		<rect pos="55,0" controller="CompassWindow">
-			<texture name="compassTexture" material="Materials/Transparent Colored" color="[transparent]" />
+		<!-- Day/Time, Climb and Wind status --> 			
+		<rect pos="55,0" >
 			<grid name="WorldInfo" pos="5,-63" rows="2" cols="1" cell_height="25" repeat_content="false" side="left">
-				<rect height="22"> 	
-					<!-- Day, Time -->
+				<rect height="22" controller="MapStats">
 					<sprite depth="2" pos="0,0" style="icon22px" sprite="ui_game_symbol_clock" globalopacitymod="0.5" />
-					<label  depth="2" pos="25,0" width="100" font_size="22" color="[white]" effect="outline" upper_case="true" justify="left" text="{daytitle} {day|always} {time|always}" />
-					<texture depth="1" pos="1,-1" size="19,19" texture="@http://games.sovic.org.ua:26980/solid?d={day|always}" material="Materials/Transparent Colored" />
+					<label  depth="2" pos="25,0" width="150" font_size="22" color="[white]" effect="outline" upper_case="true" justify="left" text="{mapdaytimetitle}: {mapdaytime}[-]" />
 				</rect>
 				<rect height="22" controller="MapStats">
-					<!-- Map temperature -->
-					<sprite depth="2" pos="0,0" style="icon22px" sprite="ui_game_symbol_cold" />
-					<label  depth="2" pos="25,0" width="40" font_size="22" color="[white]" effect="outline" upper_case="true" justify="left" text="{maptemperature}[-]" />
-					<!-- Map wind -->
-					<sprite depth="2" pos="65,0" style="icon22px" sprite="ui_game_symbol_wind" />
-					<label  depth="2" pos="90,0" width="68" font_size="22" color="[white]" effect="outline" upper_case="true" justify="left" text="{mapwind} MPH[-]" />
+					<sprite depth="2" name="windowIcon" style="icon22px" pos="4,0" sprite="ui_game_symbol_climb"/>
+					<label depth="2" name="TextContent" pos="27,0" font_size="22" color="[white]" effect="outline" upper_case="true" justify="left" text="{mapelevation}[-] M" />
+					<sprite depth="2" name="windowIcon" pos="75,0" style="icon22px" sprite="ui_game_symbol_wind" />
+					<label  depth="2" name="TextContent" pos="100,0" font_size="22" color="[white]" effect="outline" upper_case="true" justify="left" text="{mapwind}[-] MPH" />
 				</rect>
 			</grid>
 		</rect>
@@ -63,15 +59,15 @@
 				<label depth="4" name="lblFood" pos="42,-13" font_size="20" color="[white]" justify="center" pivot="center" text="{playerwater}%[-]" controller="PlayerStatsWindow"/>
 			</rect>
 		</grid>
-		<!-- Climb + Temperature -->
-		<grid name="hud" pos="9,124" rows="1" cols="2" width="168" cell_width="84" cell_height="26" repeat_content="false" side="left" >
+		<!-- Outside and Body temperature -->
+		<grid name="hud" pos="9,124" rows="1" cols="2" width="168" cell_width="84" cell_height="26" repeat_content="false" side="left" controller="MapStats">
 			<rect width="84" height="26">
-				<sprite depth="1" name="windowIcon" style="icon22px" pos="4,0" sprite="ui_game_symbol_climb"/>
-				<label depth="1" name="TextContent" pos="24,0" font_size="22" effect="outline" color="[white]" justify="left" text=" {mapelevation}[-]  M" controller="MapStats" />
+				<sprite depth="1" name="windowIcon" pos="5,0" style="icon22px" sprite="ui_game_symbol_cold" />
+				<label  depth="1" name="TextContent" pos="30,0" font_size="22" color="[white]" effect="outline" upper_case="true" justify="left" text="{maptemperature}[-]" />
 			</rect>
 			<rect width="84" height="26">
 				<sprite depth="1" name="windowIcon" style="icon22px" pos="0,0" sprite="ui_game_symbol_temperature"/>
-				<label depth="1" name="TextContent" pos="21,0" font_size="22" effect="outline" color="[white]" justify="left" text=" {playercoretemp}[-]" controller="MapStats" />
+				<label depth="1" name="TextContent" pos="21,0" font_size="22" effect="outline" color="[white]" justify="left" text="{playercoretemp}[-]" />
 			</rect>
 		</grid>
 		<!-- Buff list -->
@@ -106,10 +102,10 @@
 		</rect>
 	</window>
 
-	<!-- Moding compass windows -->
-	<window name="windowCompass" style="compass.window" controller="CompassWindow" >
+	<!-- Compass windows moded -->
+	<window name="windowCompass" style="compass.window" controller="CompassWindow">
 		<texture style="compass.window.compass.texture" name="compassTexture" rect_size="0.25,1" rect_offset=".8,0" />
-		<sprite pos="198,-27" size="4,93" sprite="ui_game_symbol_subtract" color="250,220,20,200" pivot="center" material="Materials/Transparent Colored" />
+		<sprite pos="198,-27" size="4,93" sprite="ui_game_symbol_subtract" color="250,220,20,200" pivot="center" />
 	</window>
 	<!-- SHSMOD End -->
 
@@ -2652,6 +2648,7 @@
 				<togglebutton name="toggleDecorations" caption_key="xuiDebugMenuDecorations" width="290" height="32" depth="3" />
 				<togglebutton name="toggleEntityTasks" caption_key="xuiDebugMenuEntityTasks" width="290" height="32" depth="3" />
 				<togglebutton name="toggleLightPerformance" caption_key="xuiDebugMenuShowLightPerf" width="290" height="32" depth="3" />
+        			<togglebutton name="toggleStabilityGlue" caption_key="xuiDebugMenuShowStabilityGlue" width="290" height="32" depth="3" />
 			</grid>
 
 		</panel>
