@@ -1,0 +1,10 @@
+<configs>
+	<append xpath="/styles">
+  <style name="xplevels.info.window" type="window">
+    <style_entry name="depth" value="0"/>
+    <style_entry name="pos" value="5,50"/> 
+    <style_entry name="width" value="200"/>
+    <style_entry name="height" value="110"/>
+  </style>
+	</append>
+</configs>

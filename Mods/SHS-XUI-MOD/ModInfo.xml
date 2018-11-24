@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml>
+	<ModInfo>
+		<Name value="SHS-XUI-MOD"/>
+		<Description value="Improved game interface: HUD, Compass, Toolbelt, XP Level"/>
+		<Author value="sovicUA"/>
+		<Version value="1.0"/>
+		<Website value="https://github.com/sovicUA/7dtd-ui-mod"/>
+	</ModInfo>
+</xml>
